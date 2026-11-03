@@ -1,0 +1,19 @@
+{
+  "name": "group-containment-buddy",
+  "version": "1.0.0",
+  "description": "Group & Spatial Containment Buddy on APK.audio",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
+  "keywords": [
+    "group",
+    "containment",
+    "spatial",
+    "room",
+    "rack",
+    "hierarchy"
+  ],
+  "author": "Anthony Kuzub",
+  "license": "MIT"
+}

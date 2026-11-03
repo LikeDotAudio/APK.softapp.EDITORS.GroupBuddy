@@ -1,0 +1,8 @@
+{
+  "name": "Group & Spatial Containment Buddy",
+  "icon": "🏢",
+  "group": "Design",
+  "subGroup": "Containment & Architecture",
+  "description": "Group & Containment Buddy: organize hierarchical spatial groupings (Site -> Campus -> Building -> Room -> Rack -> Bay), configure boundary paddings, group nesting, and architectural zoning colors.",
+  "app": "APK:Softapps/EDITORS/EDITORS.GroupBuddy/index.html"
+}

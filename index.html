@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Group & Spatial Containment Buddy — APK.audio</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; background: #0f1218; color: #e2e8f0; margin: 0; padding: 20px; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #283348; padding-bottom: 12px; margin-bottom: 20px; }
+    .card { background: #171d27; border: 1px solid #283348; border-radius: 8px; padding: 16px; }
+    .tree-node { padding: 8px 12px; margin: 4px 0; border-radius: 4px; display: flex; align-items: center; gap: 8px; font-family: monospace; font-size: 13px; }
+    button { background: #0284c7; color: #fff; border: 1px solid #38bdf8; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span style="font-size:20px;">🏢</span>
+      <h2>Group & Spatial Containment Buddy</h2>
+    </div>
+    <button id="btn-export">Export Spatial Hierarchy</button>
+  </header>
+
+  <div class="card">
+    <h3 style="font-size:14px; text-transform:uppercase; color:#94a3b8; margin-bottom:12px;">Spatial Containment Tree</h3>
+    <div id="tree-container"></div>
+  </div>
+
+  <script type="module">
+    import { GroupHierarchyModel } from './js/groupApp.js';
+    const model = new GroupHierarchyModel();
+    const container = document.getElementById('tree-container');
+
+    function renderTree(parentId, depth = 0) {
+      const children = model.getChildren(parentId);
+      children.forEach(c => {
+        const el = document.createElement('div');
+        el.className = 'tree-node';
+        el.style.marginLeft = `${depth * 24}px`;
+        el.style.borderLeft = `3px solid ${c.color}`;
+        el.style.background = '#1e2634';
+        el.innerHTML = `<span>⊞</span> <b>${c.name}</b> <span style="font-size:11px; color:#94a3b8;">[${c.type}]</span>`;
+        container.appendChild(el);
+        renderTree(c.id, depth + 1);
+      });
+    }
+
+    renderTree(null, 0);
+
+    document.getElementById('btn-export').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(model.groups, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'spatial-hierarchy.json';
+      a.click();
+    });
+  </script>
+</body>
+</html>
