@@ -224,7 +224,7 @@ export class GroupApp {
       let inner = `
         <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="${group.color}" fill-opacity="0.08" stroke="${group.color}" stroke-width="1.5" ${strokeDash}/>
         <rect x="${x}" y="${y}" width="${Math.min(w, 140)}" height="22" rx="4" fill="${group.color}" fill-opacity="0.25"/>
-        <text x="${x + 6}" y="${y + 15}" fill="#F0F4F8" font-size="10" font-weight="bold" font-family="JetBrains Mono, monospace">${group.name}</text>
+        <text x="${x + 6}" y="${y + 15}" fill="#f4f4f5" font-size="10" font-weight="bold" font-family="JetBrains Mono, monospace">${group.name}</text>
       `;
 
       if (children.length > 0) {
@@ -253,11 +253,11 @@ export class GroupApp {
 
     const svg = `
       <svg viewBox="0 0 ${width} ${height}" width="100%" height="${height}" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0" y="0" width="${width}" height="${height}" fill="#080C16" rx="8"/>
+        <rect x="0" y="0" width="${width}" height="${height}" fill="#121212" rx="8"/>
         <!-- Background Grid -->
         <defs>
           <pattern id="groupGrid" width="20" height="20" patternUnits="userSpaceOnUse">
-            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#121A2F" stroke-width="1"/>
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#18181b" stroke-width="1"/>
           </pattern>
         </defs>
         <rect width="${width}" height="${height}" fill="url(#groupGrid)" rx="8"/>
