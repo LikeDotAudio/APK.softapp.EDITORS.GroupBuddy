@@ -3,57 +3,139 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Group & Spatial Containment Buddy — APK.audio</title>
+  <title>Group & Spatial Containment Buddy</title>
+  <link rel="stylesheet" href="css/theme.css">
   <style>
-    body { font-family: -apple-system, sans-serif; background: #0f1218; color: #e2e8f0; margin: 0; padding: 20px; }
-    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #283348; padding-bottom: 12px; margin-bottom: 20px; }
-    .card { background: #171d27; border: 1px solid #283348; border-radius: 8px; padding: 16px; }
-    .tree-node { padding: 8px 12px; margin: 4px 0; border-radius: 4px; display: flex; align-items: center; gap: 8px; font-family: monospace; font-size: 13px; }
-    button { background: #0284c7; color: #fff; border: 1px solid #38bdf8; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+    .main-layout {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 70px);
+      padding: 16px;
+      gap: 16px;
+      box-sizing: border-box;
+    }
+    .panel {
+      background: var(--surface-primary, #121A2F);
+      border: 1px solid var(--border-color, #1E2A45);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 12px 16px;
+      background: var(--surface-secondary, #0E1424);
+      border-bottom: 1px solid var(--border-color, #1E2A45);
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text-bright, #F0F4F8);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .svg-viewport {
+      background: var(--surface-bg, #080C16);
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .table-container {
+      flex: 1;
+      overflow-y: auto;
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    table.data-table th {
+      background: var(--surface-secondary, #0E1424);
+      color: var(--text-muted, #8B9BB4);
+      padding: 8px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color, #1E2A45);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+    table.data-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border-color, #1E2A45);
+      color: var(--text-bright, #F0F4F8);
+    }
+    .inline-cell {
+      background: rgba(255, 255, 255, 0.02);
+      cursor: text;
+    }
+    .inline-cell:focus {
+      outline: 1px solid var(--accent-orange, #F4902C);
+      background: rgba(244, 144, 44, 0.1);
+    }
+    .btn-delete {
+      background: transparent;
+      border: none;
+      color: #FF5A5A;
+      cursor: pointer;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .btn-delete:hover {
+      background: rgba(255, 90, 90, 0.2);
+    }
   </style>
 </head>
-<body>
-  <header>
-    <div style="display:flex; align-items:center; gap:10px;">
-      <span style="font-size:20px;">🏢</span>
-      <h2>Group & Spatial Containment Buddy</h2>
+<body class="deep-horizon">
+  <div class="window-header">
+    <div class="window-title">
+      <span class="window-icon">🏢</span>
+      <span class="window-text">Group & Spatial Containment Buddy</span>
+      <span id="block-tag" class="block-tag">CONTAINMENT BLOCK</span>
     </div>
-    <button id="btn-export">Export Spatial Hierarchy</button>
-  </header>
-
-  <div class="card">
-    <h3 style="font-size:14px; text-transform:uppercase; color:#94a3b8; margin-bottom:12px;">Spatial Containment Tree</h3>
-    <div id="tree-container"></div>
+    <div class="window-actions">
+      <input type="text" id="prop-name" placeholder="Containment Name" style="background: var(--surface-bg); border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px; color: var(--text-bright); font-size: 12px; width: 200px;">
+      <button id="btn-open" class="btn-action">📂 Open Block</button>
+      <button id="btn-discovered" class="btn-action">⚡ Discovered</button>
+      <button id="btn-save" class="btn-action btn-primary">💾 Save & Return</button>
+      <button id="btn-close" class="btn-action btn-close">✕</button>
+    </div>
   </div>
 
-  <script type="module">
-    import { GroupHierarchyModel } from './js/groupApp.js';
-    const model = new GroupHierarchyModel();
-    const container = document.getElementById('tree-container');
+  <div class="main-layout">
+    <!-- Visual Containment Hierarchy Viewport -->
+    <div class="panel" style="flex: 0 0 auto;">
+      <div class="panel-header">
+        <span>Spatial Hierarchy & Containment Boundary Map</span>
+        <button id="btn-add-group" class="btn-action btn-small">+ Add Spatial Boundary</button>
+      </div>
+      <div id="containment-svg" class="svg-viewport"></div>
+    </div>
 
-    function renderTree(parentId, depth = 0) {
-      const children = model.getChildren(parentId);
-      children.forEach(c => {
-        const el = document.createElement('div');
-        el.className = 'tree-node';
-        el.style.marginLeft = `${depth * 24}px`;
-        el.style.borderLeft = `3px solid ${c.color}`;
-        el.style.background = '#1e2634';
-        el.innerHTML = `<span>⊞</span> <b>${c.name}</b> <span style="font-size:11px; color:#94a3b8;">[${c.type}]</span>`;
-        container.appendChild(el);
-        renderTree(c.id, depth + 1);
-      });
-    }
+    <!-- Groups Schedule Table -->
+    <div class="panel" style="flex: 1 1 auto;">
+      <div class="panel-header">
+        <span>Spatial Boundaries & Nesting Relations</span>
+      </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 5%;">ID</th>
+              <th style="width: 25%;">Group / Boundary Name</th>
+              <th style="width: 15%;">Classification</th>
+              <th style="width: 25%;">Parent Enclosure</th>
+              <th style="width: 8%;">Tint</th>
+              <th style="width: 10%;">Line Style</th>
+              <th style="width: 7%;">Padding</th>
+              <th style="width: 5%; text-align: center;">Act</th>
+            </tr>
+          </thead>
+          <tbody id="group-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-    renderTree(null, 0);
-
-    document.getElementById('btn-export').addEventListener('click', () => {
-      const blob = new Blob([JSON.stringify(model.groups, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'spatial-hierarchy.json';
-      a.click();
-    });
-  </script>
+  <script type="module" src="js/groupApp.js"></script>
 </body>
 </html>
