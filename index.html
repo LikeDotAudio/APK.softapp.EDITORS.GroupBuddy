@@ -6,6 +6,7 @@
   <title>Group & Spatial Containment Buddy</title>
   <link rel="stylesheet" href="./vendor/apk-contracts/apk-tokens.css">
   <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="./vendor/apk-table/apk-table.css">
   <style>
     .main-layout {
       display: flex;
@@ -45,45 +46,6 @@
       flex: 1;
       overflow-y: auto;
     }
-    table.data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-    }
-    table.data-table th {
-      background: var(--surface-secondary, #0f0f11);
-      color: var(--text-muted, #888888);
-      padding: 8px 10px;
-      text-align: left;
-      border-bottom: 1px solid var(--border-color, #2c2c2c);
-      font-size: 11px;
-      text-transform: uppercase;
-    }
-    table.data-table td {
-      padding: 6px 10px;
-      border-bottom: 1px solid var(--border-color, #2c2c2c);
-      color: var(--text-bright, #f4f4f5);
-    }
-    .inline-cell {
-      background: rgba(255, 255, 255, 0.02);
-      cursor: text;
-    }
-    .inline-cell:focus {
-      outline: 1px solid var(--accent-orange, #F4902C);
-      background: rgba(244, 144, 44, 0.1);
-    }
-    .btn-delete {
-      background: transparent;
-      border: none;
-      color: #FF5A5A;
-      cursor: pointer;
-      font-weight: bold;
-      padding: 2px 6px;
-      border-radius: 3px;
-    }
-    .btn-delete:hover {
-      background: rgba(255, 90, 90, 0.2);
-    }
   </style>
 </head>
 <body class="deep-horizon">
@@ -96,7 +58,6 @@
     <div class="window-actions">
       <input type="text" id="prop-name" placeholder="Containment Name" style="background: var(--surface-bg); border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px; color: var(--text-bright); font-size: 12px; width: 200px;">
       <button id="btn-open" class="btn-action">📂 Open Block</button>
-      <button id="btn-discovered" class="btn-action">⚡ Discovered</button>
       <button id="btn-save" class="btn-action btn-primary">💾 Save & Return</button>
       <button id="btn-close" class="btn-action btn-close">✕</button>
     </div>
@@ -118,25 +79,15 @@
         <span>Spatial Boundaries & Nesting Relations</span>
       </div>
       <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th style="width: 5%;">ID</th>
-              <th style="width: 25%;">Group / Boundary Name</th>
-              <th style="width: 15%;">Classification</th>
-              <th style="width: 25%;">Parent Enclosure</th>
-              <th style="width: 8%;">Tint</th>
-              <th style="width: 10%;">Line Style</th>
-              <th style="width: 7%;">Padding</th>
-              <th style="width: 5%; text-align: center;">Act</th>
-            </tr>
-          </thead>
-          <tbody id="group-table-body"></tbody>
-        </table>
+        <div id="group-table"></div>
       </div>
     </div>
   </div>
 
+  <script src="./vendor/apk-contracts/apk-contracts.global.js"></script>
+  <script src="/FrontEnd/shared/apk-bus.js"></script>
+  <script src="./vendor/apk-softapp/apk-softapp.js"></script>
+  <script src="./vendor/apk-table/apk-table.js"></script>
   <script type="module" src="js/groupApp.js"></script>
 </body>
 </html>
