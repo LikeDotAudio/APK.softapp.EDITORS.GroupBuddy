@@ -2,7 +2,7 @@
 // MIT Licence. Free, for everyone, for ever. Full text in LICENSE at the root.
 
 import { GroupHierarchyModel } from './groupModel.js';
-import { connectGroupHost, saveMeta, parentChoices } from './groupHost.js';
+import { connectGroupHost, saveMeta, parentChoices, EDITOR as EDITOR_NAME } from './groupHost.js';
 
 export { GroupHierarchyModel };
 
@@ -44,6 +44,25 @@ export class GroupApp {
 
     this.host = connectGroupHost(S, this.model, { onLoaded: () => this.render() });
     S.inheritTheme();
+    S.describe({
+      name: EDITOR_NAME,
+      does: 'Draws nested spatial boundaries (campus, building, room, zone, rack…) and saves them as a containment block.',
+      inputs: [
+        { name: 'Containment block', from: 'the CAD block this editor was opened on (host@1 load)', kind: 'cad' },
+        { name: 'Block file', from: '.json picked with Open Block', kind: 'file' },
+      ],
+      outputs: [
+        { name: 'Containment block', to: 'the CAD drawing on Save & Return, or a group_<name>.json download standalone', kind: 'cad' },
+        { name: 'Live edits', to: 'the CAD after every change (blockChanged)', kind: 'cad' },
+      ],
+      controls: [
+        { name: '+ Add Spatial Boundary', how: 'adds a NEW-ZONE zone at the root' },
+        { name: 'Table cells', how: 'edit name, classification, parent enclosure, tint, line style, padding; the row × deletes it' },
+        { name: 'Containment Name', how: 'the block name and the download file name' },
+        { name: 'Save & Return / ✕', how: 'save into the CAD (or download) / close the editor' },
+      ],
+      problems: ['bad_json', 'bad_input', 'file_unreadable', 'not_in_cad'],
+    });
     this.initControls();
     this.render();
   }
@@ -102,9 +121,13 @@ export class GroupApp {
             this.render();
             this.changed();
           } catch (err) {
-            alert('Invalid block file: ' + err.message);
+            this.S.showProblem(err.name === 'SyntaxError' ? 'bad_json' : 'bad_input', {
+              subject: file.name, detail: err.message,
+              fix: ['Open a Group Buddy containment block (.json saved by this editor, blockType group_containment).'],
+            });
           }
         };
+        reader.onerror = () => this.S.showProblem('file_unreadable', { subject: file.name, detail: reader.error && reader.error.message });
         reader.readAsText(file);
       };
       input.click();
