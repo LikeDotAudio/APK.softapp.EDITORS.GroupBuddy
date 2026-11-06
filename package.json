@@ -1,6 +1,6 @@
 {
   "name": "group-containment-buddy",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Group & Spatial Containment Buddy on APK.audio",
   "type": "module",
   "scripts": {
