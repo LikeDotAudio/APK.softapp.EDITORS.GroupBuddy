@@ -2,7 +2,8 @@
 // MIT Licence. Free, for everyone, for ever. Full text in LICENSE at the root.
 
 import { GroupHierarchyModel } from './groupModel.js';
-import { connectGroupHost, saveMeta, parentChoices, EDITOR as EDITOR_NAME } from './groupHost.js';
+import { connectGroupHost, saveMeta, saveGroupModel, parentChoices, EDITOR as EDITOR_NAME } from './groupHost.js';
+import { groupsFromIfc, schemaOf } from './groupIfc.js';
 
 export { GroupHierarchyModel };
 
@@ -49,25 +50,50 @@ export class GroupApp {
       does: 'Draws nested spatial boundaries (campus, building, room, zone, rack…) and saves them as a containment block.',
       inputs: [
         { name: 'Containment block', from: 'the CAD block this editor was opened on (host@1 load)', kind: 'cad' },
-        { name: 'Block file', from: '.json picked with Open Block', kind: 'file' },
+        { name: 'Block file', from: 'Open Block: the .json or its .ifc twin (IFC4X3_ADD2)', kind: 'file' },
       ],
       outputs: [
-        { name: 'Containment block', to: 'the CAD drawing on Save & Return, or a group_<name>.json download standalone', kind: 'cad' },
+        { name: 'Containment block', to: 'the CAD drawing on Save & Return; standalone, Save Model: group_<name>.json and its .ifc twin', kind: 'cad' },
         { name: 'Live edits', to: 'the CAD after every change (blockChanged)', kind: 'cad' },
       ],
       controls: [
         { name: '+ Add Spatial Boundary', how: 'adds a NEW-ZONE zone at the root' },
         { name: 'Table cells', how: 'edit name, classification, parent enclosure, tint, line style, padding; the row × deletes it' },
         { name: 'Containment Name', how: 'the block name and the download file name' },
-        { name: 'Save & Return / ✕', how: 'save into the CAD (or download) / close the editor' },
+        { name: 'Save & Return / ✕', how: 'save into the CAD (standalone: the .json and its .ifc) / close the editor' },
       ],
-      problems: ['bad_json', 'bad_input', 'file_unreadable', 'not_in_cad'],
+      problems: ['bad_json', 'bad_input', 'file_unreadable', 'not_in_cad', 'save_failed'],
     });
     this.initControls();
     this.render();
   }
 
   changed() { this.host.changed(this.model.toBlock(), saveMeta(this.model)); }
+
+  /** Save & Return: into the CAD; standalone, Save Model — the .json and its .ifc twin (js/groupIfc.js). */
+  save() {
+    return saveGroupModel(this.S, this.host, this.model, { onRetry: () => this.save() });
+  }
+
+  /** Open: a containment block .json or an IFC model (.ifc; an ISO 10303-21 header decides for any other name). */
+  async open() {
+    const r = await this.S.openModel({ fromIfc: (text) => groupsFromIfc(text) });
+    if (!r.ok) {
+      if (!r.cancelled) this.S.showProblem(r.problem, {
+        fix: ['Open a Group Buddy containment block (.json, blockType group_containment) or an .ifc with sites, buildings, spaces, assemblies or groups.'],
+        onRetry: () => this.open(),
+      });
+      return;
+    }
+    if (r.kind === 'json' && (!r.model || !Array.isArray(r.model.groups))) {
+      this.S.showProblem('bad_input', { subject: r.name, detail: 'no groups in this file', fix: ['Open a Group Buddy containment block (.json saved by this editor, blockType group_containment).'] });
+      return;
+    }
+    this.model.fromBlock(r.model);
+    if (r.kind === 'ifc') document.title = `${EDITOR_NAME} · ${r.name} · ${schemaOf(r.text)}`;
+    this.render();
+    this.changed();
+  }
 
   parentSelect(row) {
     const sel = document.createElement('select');
@@ -103,35 +129,8 @@ export class GroupApp {
   }
 
   initControls() {
-    document.getElementById('btn-save')?.addEventListener('click', () => {
-      this.host.save(this.model.toBlock(), saveMeta(this.model));
-    });
-
-    document.getElementById('btn-open')?.addEventListener('click', () => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.json';
-      input.onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-          try {
-            this.model.fromBlock(JSON.parse(evt.target.result));
-            this.render();
-            this.changed();
-          } catch (err) {
-            this.S.showProblem(err.name === 'SyntaxError' ? 'bad_json' : 'bad_input', {
-              subject: file.name, detail: err.message,
-              fix: ['Open a Group Buddy containment block (.json saved by this editor, blockType group_containment).'],
-            });
-          }
-        };
-        reader.onerror = () => this.S.showProblem('file_unreadable', { subject: file.name, detail: reader.error && reader.error.message });
-        reader.readAsText(file);
-      };
-      input.click();
-    });
+    document.getElementById('btn-save')?.addEventListener('click', () => this.save());
+    document.getElementById('btn-open')?.addEventListener('click', () => this.open());
 
     document.getElementById('btn-close')?.addEventListener('click', () => this.host.close());
 
